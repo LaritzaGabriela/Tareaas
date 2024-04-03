@@ -1,0 +1,79 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+class Task {
+    private String name;
+    private String status;
+
+    public Task(String name, String status) {
+        this.name = name;
+        this.status = status;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        String desktopPath = System.getProperty("user.home") + "/Desktop/";
+        String filename = desktopPath + "documento_tareas.txt";
+
+        List<Task> tasks = readTasksFromFile(filename);
+
+        // Eliminar tareas resueltas
+        deleteResolvedTasks(tasks);
+
+        // Escribir las tareas actualizadas en el mismo archivo
+        writeTasksToFile(tasks, filename);
+    }
+
+    // metodo para eliminar "resueltas"
+    public static void deleteResolvedTasks(List<Task> tasks) {
+        Iterator<Task> iterator = tasks.iterator();
+        while (iterator.hasNext()) {
+            Task task = iterator.next();
+            if (task.getStatus().equalsIgnoreCase("Resuelta")) {
+                iterator.remove();
+                System.out.println("Se ha eliminado la tarea resuelta: " + task.getName());
+            }
+        }
+    }
+
+    // leemos el archivo
+    public static List<Task> readTasksFromFile(String filename) {
+        List<Task> tasks = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(", Estado: ");
+                if (parts.length == 2) {
+                    tasks.add(new Task(parts[0].substring(7), parts[1]));
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error al leer el archivo: " + e.getMessage());
+        }
+        return tasks;
+    }
+
+    // escribimos las tareas de un archivo
+    public static void writeTasksToFile(List<Task> tasks, String filename) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            for (Task task : tasks) {
+                writer.write("Tarea: " + task.getName() + ", Estado: " + task.getStatus());
+                writer.newLine();
+            }
+            System.out.println("Se han actualizado las tareas en el archivo \"" + filename + "\".");
+        } catch (IOException e) {
+            System.err.println("Error al escribir el archivo: " + e.getMessage());
+        }
+    }
+}
